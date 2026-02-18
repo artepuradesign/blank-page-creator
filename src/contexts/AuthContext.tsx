@@ -71,7 +71,8 @@ const mapApiUserToAuthUser = (apiUser: ApiUser): AuthUser => {
     created_at: apiUser.created_at,
     updated_at: apiUser.updated_at,
     data_inicio: apiUser.data_inicio,
-    data_fim: apiUser.data_fim
+    data_fim: apiUser.data_fim,
+    premium_enabled: apiUser.premium_enabled
   };
 };
 
