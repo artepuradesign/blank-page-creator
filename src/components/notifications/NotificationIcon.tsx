@@ -8,6 +8,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useNotifications } from '@/hooks/useNotifications';
+import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -21,7 +22,7 @@ interface NotificationIconProps {
 
 const NotificationIcon: React.FC<NotificationIconProps> = ({ className = '' }) => {
   const { user, loading } = useAuth();
-  const { notifications, unreadCount, markAsRead, isLoading, refresh } = useNotifications(true, 30000);
+  const { notifications, unreadCount, markAsRead, deleteNotification, isLoading, refresh } = useNotifications(true, 30000);
   const navigate = useNavigate();
 
   // Debug logs
@@ -74,12 +75,13 @@ const NotificationIcon: React.FC<NotificationIconProps> = ({ className = '' }) =
   };
 
   const handleDeleteNotification = async (e: React.MouseEvent, notificationId: number) => {
-    e.stopPropagation(); // Prevenir click na notificação
+    e.stopPropagation();
+    e.preventDefault();
     try {
-      await markAsRead(notificationId);
-      refresh(); // Atualizar lista
+      await deleteNotification(notificationId);
     } catch (error) {
       console.error('Erro ao fechar notificação:', error);
+      toast.error('Erro ao remover notificação');
     }
   };
 
