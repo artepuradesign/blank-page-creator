@@ -191,7 +191,23 @@ const DashboardHome = () => {
   };
 
   // Filtrar apenas painéis ativos da API
-  const activePanels = Array.isArray(panels) ? panels.filter(panel => panel.is_active === true) : [];
+  // Lógica de acesso premium:
+  // - Se o usuário tem premium_enabled ativado, vê todos os painéis
+  // - Se o usuário tem um plano ativo (assinatura), a visibilidade depende do plano
+  // - Caso contrário (pré-pago sem premium), vê apenas painéis não-premium
+  const isPremiumEnabled = user ? !!(user as any).premium_enabled : false;
+  const allActivePanels = Array.isArray(panels) ? panels.filter(panel => panel.is_active === true) : [];
+  
+  const activePanels = allActivePanels.filter(panel => {
+    // Painéis não-premium são visíveis para todos
+    if (!panel.is_premium) return true;
+    // Usuário com premium_enabled vê todos
+    if (isPremiumEnabled) return true;
+    // Usuário com plano ativo vê premium (pode ser refinado por plano no futuro)
+    if (hasActiveSubscription) return true;
+    // Pré-pago sem premium: não vê painéis premium
+    return false;
+  });
 
   return (
     <ModuleTemplateProvider>

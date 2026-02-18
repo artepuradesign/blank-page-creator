@@ -9,7 +9,7 @@ export const createPanelMenus = (): SidebarItem[] => {
 };
 
 // Hook para carregar painéis da API
-export const loadPanelMenusFromApi = async (): Promise<SidebarItem[]> => {
+export const loadPanelMenusFromApi = async (premiumEnabled: boolean = false, hasActiveSubscription: boolean = false): Promise<SidebarItem[]> => {
   try {
     console.log('🔄 [PANEL_MENU] Carregando painéis e módulos da API...');
     
@@ -27,8 +27,14 @@ export const loadPanelMenusFromApi = async (): Promise<SidebarItem[]> => {
     const panels = panelsResponse.data || [];
     const modules = modulesResponse.data || [];
     
-    // Filtrar apenas painéis ativos
-    const activePanels = panels.filter(panel => panel.is_active === true);
+    // Filtrar apenas painéis ativos e aplicar lógica de premium
+    const activePanels = panels.filter(panel => {
+      if (!panel.is_active) return false;
+      if (!(panel as any).is_premium) return true;
+      if (premiumEnabled) return true;
+      if (hasActiveSubscription) return true;
+      return false;
+    });
     
     return activePanels.map(panel => {
       // Filtrar módulos que pertencem a este painel e estão ativos

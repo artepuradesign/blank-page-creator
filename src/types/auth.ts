@@ -44,6 +44,7 @@ export interface ApiUser {
   updated_at?: string;
   data_inicio?: string;
   data_fim?: string;
+  premium_enabled?: boolean | number;
 }
 
 export interface AuthUser {
@@ -76,6 +77,7 @@ export interface AuthUser {
   updated_at?: string;
   data_inicio?: string;
   data_fim?: string;
+  premium_enabled?: boolean | number;
 }
 
 export interface AuthApiResponse {
