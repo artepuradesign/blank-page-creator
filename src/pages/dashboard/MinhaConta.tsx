@@ -8,6 +8,7 @@ import BasicInfoForm from '@/components/minha-conta/BasicInfoForm';
 import PasswordChangeForm from '@/components/minha-conta/PasswordChangeForm';
 import PageHeaderCard from '@/components/dashboard/PageHeaderCard';
 import { useLocation } from 'react-router-dom';
+import PremiumPanelsSection from '@/components/minha-conta/PremiumPanelsSection';
 import DashboardTitleCard from '@/components/dashboard/DashboardTitleCard';
 import { User } from 'lucide-react';
 
@@ -65,6 +66,8 @@ const MinhaConta = () => {
         userData={userData}
         onInputChange={handleInputChange}
       />
+
+      <PremiumPanelsSection />
 
       <PasswordChangeForm />
 
