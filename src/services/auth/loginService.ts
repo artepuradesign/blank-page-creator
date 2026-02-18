@@ -78,7 +78,8 @@ export const login = async (data: LoginData): Promise<AuthApiResponse> => {
       return {
         success: false,
         error: responseData.message || 'Credenciais inválidas',
-        message: responseData.message || 'Email ou senha incorretos'
+        message: responseData.message || 'Email ou senha incorretos',
+        statusCode: responseData.status_code || undefined
       };
     }
 

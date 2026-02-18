@@ -8,12 +8,18 @@ import LoginForm from '@/components/auth/LoginForm';
 import LoginLoadingScreen from '@/components/auth/LoginLoadingScreen';
 import LoginHeader from '@/components/auth/LoginHeader';
 import LoginFooter from '@/components/auth/LoginFooter';
+import SuspendedAccountAlert from '@/components/auth/SuspendedAccountAlert';
+import InactiveAccountAlert from '@/components/auth/InactiveAccountAlert';
+import PendingAccountAlert from '@/components/auth/PendingAccountAlert';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuspendedAlert, setShowSuspendedAlert] = useState(false);
+  const [showInactiveAlert, setShowInactiveAlert] = useState(false);
+  const [showPendingAlert, setShowPendingAlert] = useState(false);
   const navigate = useNavigate();
   const { signIn, user, loading } = useAuth();
 
@@ -78,8 +84,18 @@ const Login = () => {
         }
         
       } else {
-        console.error('❌ [LOGIN] Falha no login:', result.message);
-        toast.error(result.message || 'Email ou senha incorretos');
+        console.error('❌ [LOGIN] Falha no login:', result.message, 'Status code:', result.statusCode);
+        
+        // Verificar status específico da conta
+        if (result.statusCode === 'account_suspended') {
+          setShowSuspendedAlert(true);
+        } else if (result.statusCode === 'account_inactive') {
+          setShowInactiveAlert(true);
+        } else if (result.statusCode === 'account_pending') {
+          setShowPendingAlert(true);
+        } else {
+          toast.error(result.message || 'Email ou senha incorretos');
+        }
       }
     } catch (error) {
       console.error('❌ [LOGIN] Erro no processo:', error);
@@ -115,6 +131,10 @@ const Login = () => {
           </div>
         </div>
       </div>
+
+      <SuspendedAccountAlert isOpen={showSuspendedAlert} onClose={() => setShowSuspendedAlert(false)} />
+      <InactiveAccountAlert isOpen={showInactiveAlert} onClose={() => setShowInactiveAlert(false)} />
+      <PendingAccountAlert isOpen={showPendingAlert} onClose={() => setShowPendingAlert(false)} />
     </PageLayout>
   );
 };

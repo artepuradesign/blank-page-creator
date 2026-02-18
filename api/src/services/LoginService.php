@@ -51,17 +51,40 @@ class LoginService {
             
             error_log("LOGIN_SERVICE: Senha verificada com sucesso");
             
-            // Ativar conta se estiver pendente
-            if ($user['status'] === 'pendente') {
-                error_log("LOGIN_SERVICE: Ativando conta pendente");
-                $this->activationService->activatePendingAccount($user['id']);
-                $user['status'] = 'ativo';
+            // Verificar status da conta e retornar mensagem específica
+            $userStatus = $user['status'] ?? 'ativo';
+            
+            if ($userStatus === 'suspenso') {
+                error_log("LOGIN_SERVICE: Conta suspensa - ID: " . $user['id']);
+                return [
+                    'success' => false, 
+                    'message' => 'Sua conta foi suspensa por tempo indeterminado. Entre em contato com o suporte para mais informações.',
+                    'status_code' => 'account_suspended'
+                ];
+            }
+            
+            if ($userStatus === 'inativo') {
+                error_log("LOGIN_SERVICE: Conta inativa - ID: " . $user['id']);
+                return [
+                    'success' => false, 
+                    'message' => 'Sua conta está inativa. Entre em contato com o suporte para reativação.',
+                    'status_code' => 'account_inactive'
+                ];
+            }
+            
+            if ($userStatus === 'pendente') {
+                error_log("LOGIN_SERVICE: Conta pendente - ID: " . $user['id']);
+                return [
+                    'success' => false, 
+                    'message' => 'Sua conta está pendente de aprovação. Aguarde a liberação pelo administrador.',
+                    'status_code' => 'account_pending'
+                ];
             }
             
             // Verificar se conta está ativa
-            if (!$this->activationService->isAccountActive($user['status'])) {
-                error_log("LOGIN_SERVICE: Conta não ativa - Status: " . $user['status']);
-                return ['success' => false, 'message' => 'Conta não está ativa'];
+            if ($userStatus !== 'ativo') {
+                error_log("LOGIN_SERVICE: Conta não ativa - Status: " . $userStatus);
+                return ['success' => false, 'message' => 'Conta não está ativa. Status: ' . $userStatus];
             }
             
             // Criar sessão única (invalida sessões anteriores)

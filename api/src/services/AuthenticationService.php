@@ -11,7 +11,7 @@ class AuthenticationService {
     
     public function findUserByEmail($email) {
         try {
-            $query = "SELECT *, senhaalfa as password_hash FROM users WHERE email = ? AND status IN ('ativo', 'pendente')";
+            $query = "SELECT *, senhaalfa as password_hash FROM users WHERE email = ?";
             $stmt = $this->db->prepare($query);
             $stmt->execute([$email]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);

@@ -23,7 +23,7 @@ type AuthContextType = {
   session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
-  signIn: (email: string, password: string) => Promise<{ success: boolean; redirectTo?: string; message?: string }>;
+  signIn: (email: string, password: string) => Promise<{ success: boolean; redirectTo?: string; message?: string; statusCode?: string }>;
   refreshUser: () => Promise<void>;
   isSupport: boolean;
 };
@@ -240,7 +240,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       return {
         success: false,
-        message: apiResult.message || 'Erro no login'
+        message: apiResult.message || 'Erro no login',
+        statusCode: apiResult.statusCode
       };
       
     } catch (error) {

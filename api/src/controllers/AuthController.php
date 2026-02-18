@@ -65,7 +65,18 @@ class AuthController {
             if ($result['success']) {
                 Response::success($result['data'], $result['message']);
             } else {
-                Response::error($result['message'], 401);
+                $httpCode = 401;
+                // Usar 403 para problemas de status da conta
+                if (isset($result['status_code']) && in_array($result['status_code'], ['account_suspended', 'account_inactive', 'account_pending'])) {
+                    $httpCode = 403;
+                }
+                
+                http_response_code($httpCode);
+                echo json_encode([
+                    'success' => false,
+                    'message' => $result['message'],
+                    'status_code' => $result['status_code'] ?? 'auth_error'
+                ]);
             }
             
         } catch (Exception $e) {
