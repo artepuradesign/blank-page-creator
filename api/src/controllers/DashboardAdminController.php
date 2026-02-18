@@ -1232,18 +1232,33 @@ class DashboardAdminController {
                 );
             }
             
-            // Notificação de alteração de status
+            // Notificação de alteração de status - enviar APENAS para o usuário editado, nunca para o admin
             if (isset($newData['status']) && $newData['status'] !== $currentUser['status']) {
-                $statusText = $newData['status'] === 'ativo' ? 'ativada' : 'desativada';
-                $notificationService->createNotification(
-                    $userId,
-                    'system',
-                    'Conta ' . ucfirst($statusText),
-                    'A sua conta foi ' . $statusText . ' pelo Administrador.',
-                    null,
-                    null,
-                    'high'
-                );
+                // Obter ID do admin autenticado para evitar enviar notificação para ele
+                $adminId = AuthMiddleware::getCurrentUserId();
+                
+                // Só enviar notificação se o usuário editado NÃO é o admin logado
+                if ((int)$userId !== (int)$adminId) {
+                    $statusMessages = [
+                        'ativo' => ['title' => 'Conta Ativada', 'message' => 'Sua conta foi ativada pelo Administrador. Você já pode acessar o sistema normalmente.'],
+                        'inativo' => ['title' => 'Conta Desativada', 'message' => 'Sua conta foi desativada pelo Administrador. Entre em contato com o suporte para mais informações.'],
+                        'suspenso' => ['title' => 'Conta Suspensa', 'message' => 'Sua conta foi suspensa por tempo indeterminado pelo Administrador. Entre em contato com o suporte.'],
+                        'pendente' => ['title' => 'Conta Pendente', 'message' => 'Sua conta está pendente de aprovação pelo Administrador.'],
+                    ];
+                    
+                    $status = $newData['status'];
+                    $statusInfo = $statusMessages[$status] ?? ['title' => 'Status Atualizado', 'message' => 'O status da sua conta foi alterado pelo Administrador.'];
+                    
+                    $notificationService->createNotification(
+                        $userId,
+                        'status_change',
+                        $statusInfo['title'],
+                        $statusInfo['message'],
+                        null,
+                        null,
+                        'high'
+                    );
+                }
             }
             
             // Notificação de alteração de nome
@@ -1277,6 +1292,39 @@ class DashboardAdminController {
             $stmt = $this->db->prepare($query);
             
             if ($stmt->execute([$data['status'], $userId])) {
+                // Enviar notificação para o usuário editado (não para o admin)
+                try {
+                    require_once __DIR__ . '/../services/NotificationService.php';
+                    $notificationService = new NotificationService($this->db);
+                    
+                    $adminId = AuthMiddleware::getCurrentUserId();
+                    
+                    // Só enviar notificação se o usuário editado NÃO é o admin logado
+                    if ((int)$userId !== (int)$adminId) {
+                        $statusMessages = [
+                            'ativo' => ['title' => 'Conta Ativada', 'message' => 'Sua conta foi ativada pelo Administrador. Você já pode acessar o sistema normalmente.'],
+                            'inativo' => ['title' => 'Conta Desativada', 'message' => 'Sua conta foi desativada pelo Administrador. Entre em contato com o suporte para mais informações.'],
+                            'suspenso' => ['title' => 'Conta Suspensa', 'message' => 'Sua conta foi suspensa por tempo indeterminado pelo Administrador. Entre em contato com o suporte.'],
+                            'pendente' => ['title' => 'Conta Pendente', 'message' => 'Sua conta está pendente de aprovação pelo Administrador.'],
+                        ];
+                        
+                        $status = $data['status'];
+                        $statusInfo = $statusMessages[$status] ?? ['title' => 'Status Atualizado', 'message' => 'O status da sua conta foi alterado pelo Administrador.'];
+                        
+                        $notificationService->createNotification(
+                            $userId,
+                            'status_change',
+                            $statusInfo['title'],
+                            $statusInfo['message'],
+                            null,
+                            null,
+                            'high'
+                        );
+                    }
+                } catch (Exception $notifError) {
+                    error_log("TOGGLE_STATUS NOTIFICATION ERROR: " . $notifError->getMessage());
+                }
+                
                 Response::success(null, 'Status do usuário atualizado');
             } else {
                 Response::error('Erro ao atualizar status', 400);
