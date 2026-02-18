@@ -95,4 +95,5 @@ export interface AuthApiResponse {
   };
   message?: string;
   error?: string;
+  statusCode?: string;
 }
